@@ -193,6 +193,24 @@ static void OLED_WRITE_CHAR(unsigned char chr){//ADD fonts so this shit works
     //CURSOR++;
     }
 }
+static int OLED_WRITE_CHARS(unsigned char* chars){//new function that writes string to display instead of making multiple I2C calls which is silly
+    int length = strlen(chars);
+    char buffer[161] = {0x40, 0x00};//0x40 is the data byte
+    int index = 1;
+    unsigned char chr;
+    if(length == 0||length >= 33 ){
+        return -1;
+    }
+    for(int i = 0; i < length; i++){
+        chr = chars[i];
+        chr -= 0x20;
+        for(uint8_t tmp = 0; tmp < 5; tmp++){
+            buffer[index] = SSD1306_font[chr][tmp];
+            index++;
+        }
+    }
+    return i2c_master_send(my_i2c_client, buffer, index);
+}
 
 static int OLED_INIT(void){
     //from embedtronicx article on SSD1306 here:https://embetronicx.com/tutorials/linux/device-drivers/ssd1306-i2c-linux-device-driver-using-raspberry-pi/ 
